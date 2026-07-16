@@ -23,6 +23,10 @@ jobs:
           python3 -c "import ament_package, pathlib; print(pathlib.Path(ament_package.__file__).parents[1])" \
             | sudo tee /usr/lib/python3/dist-packages/ros-jazzy.pth >/dev/null
           env -u PYTHONPATH python3 -c "import ament_package"
+          python3 -c "from ament_index_python.resources import get_resources; \
+            assert get_resources('rosidl_typesupport_c')"
+          echo "AMENT_PREFIX_PATH=${AMENT_PREFIX_PATH}" >> "${GITHUB_ENV}"
+          echo "CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}" >> "${GITHUB_ENV}"
           echo "PYTHONPATH=${PYTHONPATH}" >> "${GITHUB_ENV}"
       - uses: ros-tooling/action-ros-ci@v0.4
         with:
