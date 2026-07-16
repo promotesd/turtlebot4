@@ -1,0 +1,14 @@
+dqn:
+  gamma: 0.99
+  learning_rate: 0.001
+  batch_size: 64
+  replay_capacity: 100000
+  warmup_steps: 1000
+  target_update_interval: 500
+  hidden_size: 64
+exploration:
+  initial: 1.0
+  final: 0.05
+  decay_steps: 100000
+evaluation:
+  seeds: [11, 23, 47, 89, 131]

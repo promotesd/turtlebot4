@@ -1,0 +1,26 @@
+name: Backend request
+description: Propose a new robot transport or simulator world adapter.
+labels: ["enhancement", "rl-backend"]
+body:
+  - type: dropdown
+    id: port
+    attributes:
+      label: Port
+      options: [RobotBackend, WorldBackend, Both]
+    validations: {required: true}
+  - type: input
+    id: runtime
+    attributes: {label: Runtime and version}
+    validations: {required: true}
+  - type: textarea
+    id: interfaces
+    attributes: {label: Required interfaces and dependencies}
+    validations: {required: true}
+  - type: textarea
+    id: reset
+    attributes: {label: Reset, freshness, timeout, and safe-stop semantics}
+    validations: {required: true}
+  - type: textarea
+    id: testing
+    attributes: {label: Contract and integration test plan}
+    validations: {required: true}

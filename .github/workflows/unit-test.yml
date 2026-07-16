@@ -1,0 +1,22 @@
+name: Python unit tests
+
+on:
+  push:
+    branches: [jazzy, "agent/**"]
+  pull_request:
+    branches: [jazzy]
+
+jobs:
+  core-dqn-mock:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install Python test dependencies
+        run: python -m pip install numpy pyyaml pytest
+      - name: Run source tests without ROS or Gazebo
+        env:
+          PYTHONPATH: turtlebot4_rl_core:turtlebot4_rl_mock:turtlebot4_rl_ros:turtlebot4_rl_gz:turtlebot4_dqn:turtlebot4_rl_bringup
+        run: >-
+          pytest -q turtlebot4_rl_core/test turtlebot4_rl_mock/test
+          turtlebot4_rl_ros/test/test_sensor.py turtlebot4_dqn/test
+          turtlebot4_rl_gz/test turtlebot4_rl_bringup/test

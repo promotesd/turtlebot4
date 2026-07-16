@@ -1,0 +1,12 @@
+TurtleBot 4 reinforcement learning community extension
+Copyright 2026 xiaodudu
+
+This product includes the existing TurtleBot 4 common packages, whose copyright and
+Apache License 2.0 notices remain in their source files and repository history.
+
+The reinforcement learning implementation added here is a clean implementation based
+on the architecture and public API requirements documented in this repository. No
+source files were copied from TurtleBot3 machine-learning packages. TurtleBot3 was used
+only as a conceptual robotics reference. If future changes copy or adapt third-party
+source, this NOTICE must record the exact repository, revision, path, license, and
+modifications while retaining the original file headers.

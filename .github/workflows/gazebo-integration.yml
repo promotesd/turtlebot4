@@ -1,0 +1,92 @@
+name: Gazebo integration
+
+on:
+  workflow_dispatch:
+
+jobs:
+  headless-reset:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ros-tooling/setup-ros@0.7.15
+        with:
+          required-ros-distributions: jazzy
+      - name: Install simulator and dependencies
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ros-jazzy-turtlebot4-simulator
+          source /opt/ros/jazzy/setup.bash
+          rosdep update
+          rosdep install --from-paths . --ignore-src --rosdistro jazzy -y
+      - name: Build RL workspace
+        shell: bash
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          colcon build --packages-select \
+            turtlebot4_rl_interfaces turtlebot4_rl_core turtlebot4_rl_mock \
+            turtlebot4_rl_ros turtlebot4_rl_gz turtlebot4_dqn \
+            turtlebot4_rl_bringup turtlebot4_machine_learning
+      - name: Run 100-reset server-only gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          source /opt/ros/jazzy/setup.bash
+          source install/setup.bash
+          export HOME=/tmp/turtlebot4_ci_home
+          export ROS_DOMAIN_ID=42
+          export ROS_LOG_DIR=/tmp/turtlebot4_ros_logs
+          export GZ_SIM_RESOURCE_PATH="/opt/ros/jazzy/share/turtlebot4_gz_bringup/worlds:/opt/ros/jazzy/share/irobot_create_gz_bringup/worlds:/opt/ros/jazzy/share"
+          mkdir -p "${HOME}" "${ROS_LOG_DIR}"
+
+          ros2 launch ros_gz_sim gz_sim.launch.py \
+            gz_args:='-r -s --headless-rendering warehouse.sdf' \
+            >/tmp/turtlebot4_gz_server.log 2>&1 &
+          server_pid=$!
+          ros2 run ros_gz_bridge parameter_bridge \
+            '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock' \
+            >/tmp/turtlebot4_clock_bridge.log 2>&1 &
+          clock_pid=$!
+          ros2 launch turtlebot4_gz_bringup turtlebot4_spawn.launch.py \
+            rviz:=false model:=lite >/tmp/turtlebot4_spawn.log 2>&1 &
+          spawn_pid=$!
+          # The stock spawn launch starts many bridges. Keep the lidar gate on a
+          # dedicated process so an unrelated bridge failure cannot make reset
+          # verification silently consume stale observations.
+          scan_topic='/world/warehouse/model/turtlebot4/link/rplidar_link/sensor/rplidar/scan'
+          ros2 run ros_gz_bridge parameter_bridge \
+            "${scan_topic}@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan" \
+            --ros-args -r "${scan_topic}:=/scan" \
+            >/tmp/turtlebot4_scan_bridge.log 2>&1 &
+          scan_pid=$!
+          trap 'kill "${scan_pid}" "${spawn_pid}" "${clock_pid}" "${server_pid}" 2>/dev/null || true' EXIT
+
+          ready=false
+          for _ in {1..90}; do
+            topics="$(ros2 topic list --no-daemon || true)"
+            if grep -qx '/scan' <<<"${topics}" \
+              && grep -qx '/sim_ground_truth_pose' <<<"${topics}" \
+              && grep -qx '/cmd_vel' <<<"${topics}"; then
+              ready=true
+              break
+            fi
+            sleep 2
+          done
+          if [[ "${ready}" != true ]]; then
+            echo 'TurtleBot 4 simulation topics did not become ready'
+            exit 1
+          fi
+          timeout 20 ros2 topic echo /scan --once --no-daemon >/dev/null
+          timeout 20 ros2 topic echo /sim_ground_truth_pose --once --no-daemon >/dev/null
+
+          ros2 run turtlebot4_rl_bringup headless_reset_smoke \
+            --episodes 100 --seed 42
+      - name: Show simulator logs on failure
+        if: failure()
+        shell: bash
+        run: |
+          tail -n 200 /tmp/turtlebot4_gz_server.log || true
+          tail -n 200 /tmp/turtlebot4_spawn.log || true
+          tail -n 100 /tmp/turtlebot4_clock_bridge.log || true
+          tail -n 100 /tmp/turtlebot4_scan_bridge.log || true

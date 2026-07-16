@@ -1,0 +1,55 @@
+backend:
+  robot: ros2
+  world: gazebo_harmonic
+observation:
+  lidar_bins: 24
+  lidar_min_range: 0.12
+  lidar_max_range: 10.0
+  include_goal_distance: true
+  include_goal_angle: true
+action:
+  type: discrete_velocity
+  duration_seconds: 0.2
+  commands:
+    - {linear_x: 0.12, angular_z: 0.80}
+    - {linear_x: 0.15, angular_z: 0.40}
+    - {linear_x: 0.18, angular_z: 0.00}
+    - {linear_x: 0.15, angular_z: -0.40}
+    - {linear_x: 0.12, angular_z: -0.80}
+termination:
+  goal_tolerance: 0.25
+  collision_distance: 0.22
+  max_steps: 800
+ros:
+  scan_topic: /scan
+  # Gazebo's diff-drive /odom is not reset by entity teleportation. Ground
+  # truth stays in the same world frame as randomized goals.
+  odom_topic: /sim_ground_truth_pose
+  cmd_vel_topic: /cmd_vel
+  base_frame: base_link
+  odom_frame: odom
+  sensor_timeout_seconds: 0.5
+  command_timeout_seconds: 0.3
+  readiness_timeout_seconds: 5.0
+  command_publish_hz: 20.0
+  use_sim_time: true
+  allow_zero_message_timestamps: true
+  future_timestamp_tolerance_seconds: 0.1
+  clock_jump_tolerance_seconds: 0.1
+gazebo:
+  world_name: warehouse
+  robot_entity_name: turtlebot4
+  goal_entity_name: turtlebot4_rl_goal
+  service_timeout_seconds: 20.0
+  service_retries: 2
+  retry_delay_seconds: 0.1
+  settle_seconds: 0.25
+  # Opt in only after listing movable model entities from the selected world.
+  randomize_obstacles: false
+  randomizable_obstacles: []
+  obstacle_min_x: -2.5
+  obstacle_max_x: 2.5
+  obstacle_min_y: -2.0
+  obstacle_max_y: 2.0
+  obstacle_clearance: 0.6
+  obstacle_sample_attempts: 100

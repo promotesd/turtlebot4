@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>turtlebot4_machine_learning</name>
+  <version>0.1.0</version>
+  <description>Metapackage for the TurtleBot 4 reinforcement learning framework.</description>
+  <maintainer email="1412822254@qq.com">xiaodudu</maintainer>
+  <license>Apache-2.0</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <exec_depend>turtlebot4_dqn</exec_depend>
+  <exec_depend>turtlebot4_rl_bringup</exec_depend>
+  <exec_depend>turtlebot4_rl_core</exec_depend>
+  <exec_depend>turtlebot4_rl_gz</exec_depend>
+  <exec_depend>turtlebot4_rl_interfaces</exec_depend>
+  <exec_depend>turtlebot4_rl_mock</exec_depend>
+  <exec_depend>turtlebot4_rl_ros</exec_depend>
+  <export><build_type>ament_cmake</build_type></export>
+</package>

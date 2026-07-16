@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>turtlebot4_rl_bringup</name>
+  <version>0.1.0</version>
+  <description>Launch, configuration, and executable examples for TurtleBot 4 RL.</description>
+  <maintainer email="1412822254@qq.com">xiaodudu</maintainer>
+  <license>Apache-2.0</license>
+  <exec_depend>ament_index_python</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>python3-yaml</exec_depend>
+  <exec_depend>turtlebot4_dqn</exec_depend>
+  <exec_depend>turtlebot4_rl_core</exec_depend>
+  <exec_depend>turtlebot4_rl_gz</exec_depend>
+  <exec_depend>turtlebot4_rl_mock</exec_depend>
+  <exec_depend>turtlebot4_rl_ros</exec_depend>
+  <test_depend>python3-pytest</test_depend>
+  <test_depend>turtlebot4_rl_core</test_depend>
+  <test_depend>turtlebot4_rl_mock</test_depend>
+  <export><build_type>ament_python</build_type></export>
+</package>
