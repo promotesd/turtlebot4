@@ -9,6 +9,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-24.04
+    env:
+      # ROS Python modules are installed outside Debian's default sys.path.
+      PYTHONPATH: /opt/ros/jazzy/lib/python3.12/site-packages
     steps:
       - uses: actions/checkout@v7
       - uses: ros-tooling/setup-ros@v0.7
