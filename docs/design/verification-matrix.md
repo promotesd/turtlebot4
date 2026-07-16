@@ -24,7 +24,7 @@ work that must not be inferred. Commands were run on Ubuntu 24.04 with ROS 2 Jaz
 | Ruff/mypy/ament/Python/YAML/CMake/docs checks | local commands and link checker | Verified |
 | Physical-robot staged safety validation | requires TurtleBot 4 and human supervision | Not run |
 | Fork Draft PR | `promotesd/turtlebot4` PR #1 from `agent/rl-framework` | Verified |
-| GitHub Actions | final remote check read awaits explicit authorization | Pending |
+| GitHub Actions | Fork PR #1: ROS build, Python unit/static, Mock integration, docs, and dependency review all passed | Verified |
 | Official upstream RFC/PR | requires fork PR evidence and maintainer coordination | Pending |
 
 The remaining external gates are release/coordination evidence, not unit-test targets.
