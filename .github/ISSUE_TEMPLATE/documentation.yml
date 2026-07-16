@@ -1,0 +1,16 @@
+name: Documentation issue
+description: Report missing, incorrect, or unclear documentation.
+labels: ["documentation"]
+body:
+  - type: input
+    id: location
+    attributes: {label: Page or file}
+    validations: {required: true}
+  - type: textarea
+    id: problem
+    attributes:
+      label: "What is incorrect or unclear?"
+    validations: {required: true}
+  - type: textarea
+    id: proposal
+    attributes: {label: Suggested correction}

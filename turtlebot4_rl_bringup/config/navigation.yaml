@@ -1,0 +1,36 @@
+backend:
+  robot: ros2
+  world: gazebo_harmonic
+observation:
+  lidar_bins: 24
+  lidar_min_range: 0.12
+  lidar_max_range: 10.0
+  include_goal_distance: true
+  include_goal_angle: true
+action:
+  type: discrete_velocity
+  duration_seconds: 0.2
+  commands:
+    - {linear_x: 0.12, angular_z: 0.80}
+    - {linear_x: 0.15, angular_z: 0.40}
+    - {linear_x: 0.18, angular_z: 0.00}
+    - {linear_x: 0.15, angular_z: -0.40}
+    - {linear_x: 0.12, angular_z: -0.80}
+termination:
+  goal_tolerance: 0.25
+  collision_distance: 0.22
+  max_steps: 800
+ros:
+  scan_topic: /scan
+  odom_topic: /odom
+  cmd_vel_topic: /cmd_vel
+  base_frame: base_link
+  odom_frame: odom
+  sensor_timeout_seconds: 0.5
+  command_timeout_seconds: 0.3
+gazebo:
+  world_name: depot
+  robot_entity_name: turtlebot4
+  goal_entity_name: turtlebot4_rl_goal
+  service_timeout_seconds: 5.0
+  settle_seconds: 0.25

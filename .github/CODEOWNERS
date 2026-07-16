@@ -1,3 +1,9 @@
 # Default all changes will request review from:
 * @roni-kreinin
 * @hilary-luo
+
+# Community RL extension in this fork
+/turtlebot4_rl_*/ @promotesd
+/turtlebot4_dqn/ @promotesd
+/turtlebot4_machine_learning/ @promotesd
+/docs/ @promotesd

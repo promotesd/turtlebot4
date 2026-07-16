@@ -1,0 +1,29 @@
+backend:
+  robot: mock
+  world: mock
+observation:
+  lidar_bins: 24
+  lidar_min_range: 0.12
+  lidar_max_range: 10.0
+  include_goal_distance: true
+  include_goal_angle: true
+action:
+  type: discrete_velocity
+  duration_seconds: 0.2
+  commands:
+    - {linear_x: 0.12, angular_z: 0.80}
+    - {linear_x: 0.15, angular_z: 0.40}
+    - {linear_x: 0.18, angular_z: 0.00}
+    - {linear_x: 0.15, angular_z: -0.40}
+    - {linear_x: 0.12, angular_z: -0.80}
+reward:
+  progress_weight: 5.0
+  step_penalty: -0.01
+  goal_reward: 100.0
+  collision_penalty: -100.0
+termination:
+  goal_tolerance: 0.25
+  collision_distance: 0.22
+  max_steps: 800
+ros: {}
+gazebo: {}

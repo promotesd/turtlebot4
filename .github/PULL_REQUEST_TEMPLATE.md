@@ -1,26 +1,29 @@
-## Description
+## Summary
 
-Please include a summary of the change and which issue is fixed. Also include relevant motivation and context.
+## Motivation
 
-Fixes # (issue).
+## Architecture and scope
 
-## Type of change
+## Non-goals
 
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
+## Package changes
 
-## How Has This Been Tested?
+## Testing
 
-Please describe the tests that you ran to verify your changes.
-Provide instructions so we can reproduce. Also list any relevant details for your test configuration.
+List exact commands and environment. Distinguish Mock, Gazebo, and physical-robot evidence.
 
-```bash
-# Run this command
-ros2 launch package launch.py
-```
+## Compatibility and safety
+
+## Licensing and attribution
+
+## Documentation and follow-up
 
 ## Checklist
 
-- [ ] I have performed a self-review of my own code
-- [ ] I have commented my code, particularly in hard-to-understand areas
-- [ ] I have made corresponding changes to the documentation
+- [ ] The diff is focused and has no credentials, generated models, logs, or datasets.
+- [ ] Core does not import ROS, Gazebo, or a deep-learning framework.
+- [ ] New behavior has deterministic tests and validated configuration.
+- [ ] `terminated` and `truncated` semantics remain distinct.
+- [ ] Robot command paths safely stop on timeout, errors, episode end, and shutdown.
+- [ ] Third-party provenance and license headers are preserved and recorded.
+- [ ] I ran `git diff --check`, relevant pytest/colcon checks, and documented limits.

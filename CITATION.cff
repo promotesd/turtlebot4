@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+message: "If you use the TurtleBot 4 RL community extension, cite this software."
+title: "TurtleBot 4 reinforcement learning framework"
+type: software
+authors:
+  - name: xiaodudu
+version: 0.1.0
+date-released: 2026-07-16
+license: Apache-2.0
+repository-code: "https://github.com/promotesd/turtlebot4"
+keywords:
+  - turtlebot4
+  - ros2
+  - reinforcement-learning

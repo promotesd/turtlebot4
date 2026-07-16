@@ -1,0 +1,22 @@
+name: Gazebo integration
+
+on:
+  workflow_dispatch:
+
+jobs:
+  adapter-build-and-sdf-test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ros-tooling/setup-ros@v0.7
+        with:
+          required-ros-distributions: jazzy
+      - name: Build Gazebo adapter
+        uses: ros-tooling/action-ros-ci@v0.4
+        with:
+          target-ros2-distro: jazzy
+          package-name: turtlebot4_rl_core turtlebot4_rl_ros turtlebot4_rl_gz
+      - name: Explain external world requirement
+        run: >-
+          echo "Adapter build passed. Repeated Stage 1 reset testing requires a pinned
+          turtlebot4_simulator world and is intentionally not represented as passing here."

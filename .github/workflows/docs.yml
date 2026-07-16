@@ -1,0 +1,22 @@
+name: Documentation checks
+
+on:
+  push:
+    branches: [jazzy, "agent/**"]
+  pull_request:
+    branches: [jazzy]
+
+jobs:
+  docs:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: Require architecture and project policy documents
+        run: >-
+          test -f README.md && test -f CONTRIBUTING.md && test -f CODE_OF_CONDUCT.md &&
+          test -f SECURITY.md && test -f SUPPORT.md && test -f GOVERNANCE.md &&
+          test -f ROADMAP.md && test -f NOTICE && test -f CITATION.cff &&
+          test -f docs/design/rl-framework-rfc.md &&
+          test -f docs/architecture/rl-framework.md
+      - name: Check local Markdown links
+        run: python scripts/check_markdown_links.py
