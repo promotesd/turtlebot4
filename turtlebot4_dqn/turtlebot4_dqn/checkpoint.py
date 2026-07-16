@@ -1,7 +1,7 @@
 """Portable NumPy checkpoint persistence."""
 
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import numpy.typing as npt
@@ -31,7 +31,7 @@ def save_checkpoint(agent: DQNAgent, path: str | Path) -> Path:
         }
     )
     with temporary.open('wb') as stream:
-        np.savez_compressed(stream, **arrays)
+        np.savez_compressed(stream, **cast(Any, arrays))
     temporary.replace(destination)
     return destination
 

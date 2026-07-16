@@ -1,12 +1,8 @@
 """Reproducible configuration-driven DQN training and evaluation command."""
 
 import argparse
-from dataclasses import asdict
-import hashlib
-from importlib import metadata
 import json
 from pathlib import Path
-import subprocess
 import time
 
 from ament_index_python.packages import get_package_share_directory
@@ -14,90 +10,15 @@ from ament_index_python.packages import get_package_share_directory
 from turtlebot4_dqn import DQNAgent, load_dqn_configuration
 from turtlebot4_dqn.checkpoint import load_checkpoint, save_checkpoint
 from turtlebot4_dqn.evaluator import evaluate
-from turtlebot4_dqn.trainer import EpisodeMetrics, train
+from turtlebot4_dqn.trainer import train
 from turtlebot4_rl_bringup.configuration import load_configuration
 from turtlebot4_rl_bringup.factory import default_registry
-
-
-def _configuration_record(path: str | Path) -> tuple[str, str]:
-    resolved = Path(path).resolve()
-    return str(resolved), hashlib.sha256(resolved.read_bytes()).hexdigest()
-
-
-def _revision(override: str | None = None) -> str:
-    if override:
-        return override
-    try:
-        result = subprocess.run(
-            ['git', 'rev-parse', 'HEAD'],
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=2.0,
-        )
-    except (FileNotFoundError, subprocess.TimeoutExpired):
-        return 'unknown'
-    if result.returncode != 0:
-        return 'unknown'
-    revision = result.stdout.strip()
-    try:
-        status = subprocess.run(
-            ['git', 'status', '--porcelain', '--untracked-files=no'],
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=2.0,
-        )
-    except (FileNotFoundError, subprocess.TimeoutExpired):
-        return revision
-    return revision + ('-dirty' if status.returncode == 0 and status.stdout else '')
-
-
-def _package_version(distribution: str) -> str:
-    try:
-        return metadata.version(distribution)
-    except metadata.PackageNotFoundError:
-        return 'source-checkout'
-
-
-def summarize(
-    metrics: list[EpisodeMetrics],
-    mode: str,
-    *,
-    run_duration_seconds: float = 0.0,
-    provenance: dict[str, object] | None = None,
-) -> dict[str, object]:
-    """Aggregate a non-empty metric set for stable JSON output."""
-    if not metrics:
-        raise ValueError('metrics must not be empty')
-    successful = [item for item in metrics if item.success]
-    losses = [item.mean_loss for item in metrics if item.mean_loss is not None]
-    report: dict[str, object] = {
-        'mode': mode,
-        'episodes': len(metrics),
-        'mean_reward': sum(item.reward for item in metrics) / len(metrics),
-        'success_rate': sum(item.success for item in metrics) / len(metrics),
-        'collision_rate': sum(item.collision for item in metrics) / len(metrics),
-        'timeout_rate': sum(item.truncated for item in metrics) / len(metrics),
-        'mean_duration_seconds': sum(item.duration_seconds for item in metrics) / len(metrics),
-        'mean_steps': sum(item.steps for item in metrics) / len(metrics),
-        'mean_time_to_goal_seconds': (
-            sum(item.duration_seconds for item in successful) / len(successful)
-            if successful
-            else None
-        ),
-        'mean_path_length': sum(item.path_length for item in metrics) / len(metrics),
-        'mean_spl': sum(item.spl for item in metrics) / len(metrics),
-        'mean_inference_ms': sum(item.mean_inference_ms for item in metrics) / len(metrics),
-        'mean_training_loss': sum(losses) / len(losses) if losses else None,
-        'run_duration_seconds': run_duration_seconds,
-        'seeds': [item.seed for item in metrics],
-        'per_episode': [asdict(item) for item in metrics],
-    }
-    report[f'{mode}_duration_seconds'] = run_duration_seconds
-    if provenance:
-        report.update(provenance)
-    return report
+from turtlebot4_rl_bringup.reporting import (
+    configuration_record,
+    package_version,
+    revision,
+    summarize,
+)
 
 
 def main() -> None:
@@ -142,19 +63,19 @@ def main() -> None:
                 save_checkpoint(agent, Path(args.checkpoint))
     finally:
         environment.close()
-    environment_config_path, environment_config_sha256 = _configuration_record(
+    environment_config_path, environment_config_sha256 = configuration_record(
         environment_path
     )
-    dqn_config_path, dqn_config_sha256 = _configuration_record(dqn_path)
+    dqn_config_path, dqn_config_sha256 = configuration_record(dqn_path)
     backend = framework_configuration.backend
     report = summarize(
         metrics,
         args.mode,
         run_duration_seconds=time.perf_counter() - run_started,
         provenance={
-            'code_revision': _revision(args.revision),
+            'code_revision': revision(args.revision),
             'environment_version': (
-                f'turtlebot4_rl_core/{_package_version("turtlebot4-rl-core")} '
+                f'turtlebot4_rl_core/{package_version("turtlebot4-rl-core")} '
                 f'{backend.robot}+{backend.world}'
             ),
             'environment_config_path': environment_config_path,

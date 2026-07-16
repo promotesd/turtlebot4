@@ -4,7 +4,7 @@ import pytest
 
 from turtlebot4_rl_bringup.configuration import load_configuration
 from turtlebot4_rl_bringup.factory import BackendRegistry, default_registry
-from turtlebot4_rl_bringup.train_mock import summarize
+from turtlebot4_rl_bringup.reporting import summarize
 from turtlebot4_dqn.trainer import EpisodeMetrics
 
 
