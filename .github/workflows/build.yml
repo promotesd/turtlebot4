@@ -31,6 +31,9 @@ jobs:
       - uses: ros-tooling/action-ros-ci@v0.4
         with:
           target-ros2-distro: jazzy
+          # Regular installs keep dependent Python packages importable when
+          # action-ros-ci starts tests from the underlay-only environment.
+          no-symlink-install: true
           package-name: >-
             turtlebot4_description turtlebot4_msgs turtlebot4_navigation turtlebot4_node
             turtlebot4_rl_interfaces turtlebot4_rl_core turtlebot4_rl_mock
