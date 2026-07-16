@@ -6,7 +6,6 @@
   <description>Simulator- and ROS-independent reinforcement learning environment for TurtleBot 4.</description>
   <maintainer email="1412822254@qq.com">xiaodudu</maintainer>
   <license>Apache-2.0</license>
-  <buildtool_depend>ament_python</buildtool_depend>
   <exec_depend>python3-numpy</exec_depend>
   <test_depend>python3-pytest</test_depend>
   <export><build_type>ament_python</build_type></export>

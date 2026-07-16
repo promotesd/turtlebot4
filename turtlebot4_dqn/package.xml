@@ -6,7 +6,6 @@
   <description>Backend-independent DQN training and evaluation baseline for TurtleBot 4.</description>
   <maintainer email="1412822254@qq.com">xiaodudu</maintainer>
   <license>Apache-2.0</license>
-  <buildtool_depend>ament_python</buildtool_depend>
   <exec_depend>python3-numpy</exec_depend>
   <exec_depend>python3-yaml</exec_depend>
   <exec_depend>turtlebot4_rl_core</exec_depend>
