@@ -11,12 +11,18 @@ import numpy as np
 from numpy.typing import NDArray
 import rclpy
 from rclpy.node import Node
+from rclpy.parameter import Parameter
 from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import LaserScan
 
 from turtlebot4_rl_core import Pose2D, RobotObservation, VelocityCommand
 from turtlebot4_rl_ros.config import RosRobotConfig
-from turtlebot4_rl_ros.sensor import quaternion_to_yaw, validate_ranges
+from turtlebot4_rl_ros.sensor import (
+    clock_moved_backwards,
+    message_stamp_is_fresh,
+    quaternion_to_yaw,
+    validate_ranges,
+)
 
 
 class RosRobotBackend:
@@ -27,7 +33,10 @@ class RosRobotBackend:
         if node is None and not rclpy.ok():
             rclpy.init()
         self._owns_node = node is None
-        self.node = node or Node('turtlebot4_rl_robot_backend')
+        self.node = node or Node(
+            'turtlebot4_rl_robot_backend',
+            parameter_overrides=[Parameter('use_sim_time', value=self.config.use_sim_time)],
+        )
         self._lock = Lock()
         self._sample_available = Condition(self._lock)
         self._ranges: NDArray[np.float32] | None = None
@@ -35,6 +44,7 @@ class RosRobotBackend:
         self._scan_received = 0.0
         self._odom_received = 0.0
         self._last_command = 0.0
+        self._last_ros_time_nanoseconds = 0
         self._closed = False
         self._publisher = self.node.create_publisher(TwistStamped, self.config.cmd_vel_topic, 10)
         self._scan_subscription = self.node.create_subscription(
@@ -46,7 +56,36 @@ class RosRobotBackend:
         timer_period = min(self.config.command_timeout_seconds / 2.0, 0.1)
         self._watchdog = self.node.create_timer(timer_period, self._on_watchdog)
 
+    def _prepare_message(self, stamp_seconds: int, stamp_nanoseconds: int) -> bool:
+        now_nanoseconds = self.node.get_clock().now().nanoseconds
+        jumped_backwards = False
+        with self._sample_available:
+            if clock_moved_backwards(
+                self._last_ros_time_nanoseconds,
+                now_nanoseconds,
+                tolerance_seconds=self.config.clock_jump_tolerance_seconds,
+            ):
+                self._ranges = None
+                self._pose = None
+                self._scan_received = 0.0
+                self._odom_received = 0.0
+                jumped_backwards = True
+                self._sample_available.notify_all()
+            self._last_ros_time_nanoseconds = now_nanoseconds
+        if jumped_backwards:
+            self.stop()
+        return message_stamp_is_fresh(
+            stamp_seconds,
+            stamp_nanoseconds,
+            now_nanoseconds=now_nanoseconds,
+            max_age_seconds=self.config.sensor_timeout_seconds,
+            future_tolerance_seconds=self.config.future_timestamp_tolerance_seconds,
+            allow_zero=self.config.allow_zero_message_timestamps,
+        )
+
     def _on_scan(self, message: LaserScan) -> None:
+        if not self._prepare_message(message.header.stamp.sec, message.header.stamp.nanosec):
+            return
         try:
             ranges = validate_ranges(message.ranges)
         except ValueError:
@@ -57,6 +96,8 @@ class RosRobotBackend:
             self._sample_available.notify_all()
 
     def _on_odom(self, message: Odometry) -> None:
+        if not self._prepare_message(message.header.stamp.sec, message.header.stamp.nanosec):
+            return
         position = message.pose.pose.position
         orientation = message.pose.pose.orientation
         try:

@@ -12,13 +12,15 @@ work that must not be inferred. Commands were run on Ubuntu 24.04 with ROS 2 Jaz
 | Replaceable backend pairs | registry tests for built-in and custom pairs | Verified |
 | Deterministic Mock and no episode leak | equal-seed trajectory plus 1,000 complete episodes | Verified |
 | ROS sensor/command safety | live local DDS test for scan/odom/cmd, stale data, watchdog zero | Verified |
+| ROS timestamp and clock-jump handling | old/future stamp tests, monotonic watchdog, cache clear and zero-stop on backward jump | Verified |
 | Gazebo adapter API and goal SDF | package build and valid SDF/config unit tests | Verified |
-| Gazebo headless repeated reset | Harmonic `warehouse`, Lite model, `/cmd_vel` moved 0.0058 m, zero-stop, and 100/100 fresh-sensor resets; mean 0.362 s, max 0.581 s | Verified |
+| Seeded obstacle randomization | deterministic allow-list sampling, bounds and clearance unit test | Verified |
+| Gazebo headless repeated reset | Harmonic `warehouse`, Lite model, `/cmd_vel` moved 0.0261 m, zero-stop, and 100/100 timestamp-valid resets; mean 0.322 s, max 0.388 s | Verified |
 | DQN replay/target/update/checkpoint | unit tests, checkpoint round trip | Verified |
 | Train/evaluate separation and multi-seed metrics | installed `train_rl` train and 5-seed evaluate runs | Verified |
 | Reward/outcome/path/SPL/timing metrics | trainer/evaluator tests and CLI JSON output | Verified |
 | Full new-package ROS build | 8 selected packages finished | Verified |
-| New-package colcon tests | 27 tests, 0 errors/failures/skips | Verified |
+| New-package colcon tests | 30 tests, 0 errors/failures/skips | Verified |
 | Ruff/mypy/ament/Python/YAML/CMake/docs checks | local commands and link checker | Verified |
 | Physical-robot staged safety validation | requires TurtleBot 4 and human supervision | Not run |
 | Fork Draft PR | `promotesd/turtlebot4` PR #1 from `agent/rl-framework` | Verified |

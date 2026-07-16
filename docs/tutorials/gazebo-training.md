@@ -92,10 +92,32 @@ start. Gazebo service calls have bounded timeouts and retries. The command exits
 non-zero with the failing step or episode number.
 
 The acceptance run on Ubuntu 24.04, ROS 2 Jazzy, and Gazebo Harmonic completed 100 of
-100 resets with seed 20260716. Mean reset time was 0.362 seconds and the maximum was
-0.581 seconds; every observation used lidar and pose data received after its reset, and
-the maximum reset-position error was 0.0053 m. The low-speed command probe observed
-0.0058 m of motion followed by a zero-speed reset.
+100 resets with seed 20260716. Mean reset time was 0.322 seconds and the maximum was
+0.388 seconds; every observation used lidar and pose data received after its reset, and
+the maximum reset-position error was 0.0093 m. The low-speed command probe observed
+0.0261 m of motion followed by a zero-speed reset. This run enabled `/clock` and source
+timestamp validation for both sensor streams.
+
+## Optional obstacle randomization
+
+Obstacle randomization is disabled by default. Enable it only for model entities that
+the selected world permits Gazebo to move:
+
+```yaml
+gazebo:
+  randomize_obstacles: true
+  randomizable_obstacles: [barrier_0, barrier_1]
+  obstacle_min_x: -2.5
+  obstacle_max_x: 2.5
+  obstacle_min_y: -2.0
+  obstacle_max_y: 2.0
+  obstacle_clearance: 0.6
+  obstacle_sample_attempts: 100
+```
+
+Sampling uses the episode seed and keeps every configured obstacle away from the robot
+start, goal, and previously sampled obstacle centers. Failure to find a valid pose is
+an explicit reset error rather than a partially randomized episode.
 
 ## Evaluation
 

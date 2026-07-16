@@ -9,3 +9,8 @@ send one very-low-speed action; run a short human-supervised episode; evaluate a
 goal; then evaluate the complete frozen policy. Confirm stale sensor data, command
 timeout, exception, terminal state, Ctrl-C, and process shutdown each produce zero
 velocity. Never enable simulator teleport/reset code in this mode.
+
+The ROS adapter compares non-zero message header stamps with the node clock, rejects
+old or implausibly future samples, and uses monotonic receipt time for watchdogs. Set
+`use_sim_time: true` only with a valid `/clock` source. A backward ROS-time jump clears
+cached scan/odometry and publishes zero velocity before accepting a new complete pair.

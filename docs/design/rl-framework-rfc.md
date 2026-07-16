@@ -24,7 +24,9 @@ user installs a deep-learning framework or Gazebo.
 
 This RFC does not promise an optimal policy, a trained model, unsupervised physical-
 robot training, simulator parity, or acceptance into an official TurtleBot repository.
-PPO/SAC, distributed training, perception models, and domain randomization are future work.
+PPO/SAC, distributed training, perception models, and automatic world-wide domain
+randomization are future work. The Gazebo adapter supports opt-in seeded pose
+randomization for an explicit allow-list of movable obstacle entities.
 
 ## User scenarios
 
@@ -103,8 +105,9 @@ inference latency. The initial target is zero uncaught errors over 1,000 Mock re
 deterministic trajectories for equal seeds. Simulator targets are 100 repeated resets
 and fresh `/scan`/pose data. Reset and step both gate observations on samples received
 after the world reset or action boundary. The Harmonic `warehouse` acceptance run
-completed 100 of 100 resets with post-reset sensor samples (mean 0.362 seconds, maximum
-0.581 seconds) and observed 0.0058 m of low-speed command motion before zero-stop.
+completed 100 of 100 resets with post-reset, source-timestamp-valid sensor samples
+(mean 0.322 seconds, maximum 0.388 seconds) and observed 0.0261 m of low-speed command
+motion before zero-stop.
 
 ## Pull-request split
 

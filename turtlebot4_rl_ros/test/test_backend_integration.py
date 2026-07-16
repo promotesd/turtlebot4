@@ -64,6 +64,18 @@ def test_ros_backend_topics_freshness_and_command_watchdog() -> None:
         odometry = Odometry()
         odometry.pose.pose.orientation.w = 1.0
 
+        # Non-zero stamps from a different/old clock epoch must not make the
+        # backend ready. Zero stamps remain supported for legacy drivers.
+        scan.header.stamp.sec = 1
+        odometry.header.stamp.sec = 1
+        for _ in range(5):
+            scan_publisher.publish(scan)
+            odom_publisher.publish(odometry)
+            time.sleep(0.01)
+        assert not backend.is_ready()
+        scan.header.stamp.sec = 0
+        odometry.header.stamp.sec = 0
+
         def publish_sensors() -> bool:
             scan_publisher.publish(scan)
             odom_publisher.publish(odometry)

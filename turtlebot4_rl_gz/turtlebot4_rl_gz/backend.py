@@ -190,14 +190,40 @@ class GazeboWorldBackend:
     def _orientation(yaw: float) -> tuple[float, float]:
         return math.sin(yaw / 2.0), math.cos(yaw / 2.0)
 
-    def _set_robot_pose(self, x: float, y: float, yaw: float) -> None:
+    def _set_entity_pose(self, name: str, x: float, y: float, yaw: float) -> None:
         z_value, w_value = self._orientation(yaw)
         request = (
-            f'name: {json.dumps(self.config.robot_entity_name)} '
+            f'name: {json.dumps(name)} '
             f'position {{ x: {x!r} y: {y!r} z: 0.0 }} '
             f'orientation {{ x: 0.0 y: 0.0 z: {z_value!r} w: {w_value!r} }}'
         )
         self._call_service('set_pose', 'gz.msgs.Pose', request)
+
+    def _randomize_obstacles(
+        self, rng: np.random.Generator
+    ) -> dict[str, tuple[float, float, float]]:
+        poses: dict[str, tuple[float, float, float]] = {}
+        occupied = [
+            (self.config.robot_start_x, self.config.robot_start_y),
+            (self._goal.x, self._goal.y),
+        ]
+        for name in self.config.randomizable_obstacles:
+            for _ in range(self.config.obstacle_sample_attempts):
+                x = float(rng.uniform(self.config.obstacle_min_x, self.config.obstacle_max_x))
+                y = float(rng.uniform(self.config.obstacle_min_y, self.config.obstacle_max_y))
+                if all(
+                    math.hypot(x - occupied_x, y - occupied_y)
+                    >= self.config.obstacle_clearance
+                    for occupied_x, occupied_y in occupied
+                ):
+                    break
+            else:
+                raise RuntimeError(f'could not sample a collision-free pose for obstacle {name}')
+            yaw = float(rng.uniform(-math.pi, math.pi))
+            self._set_entity_pose(name, x, y, yaw)
+            poses[name] = (x, y, yaw)
+            occupied.append((x, y))
+        return poses
 
     def _delete_goal_marker(self, *, required: bool = False) -> bool:
         request = f'name: {json.dumps(self.config.goal_entity_name)} type: MODEL'
@@ -237,18 +263,25 @@ class GazeboWorldBackend:
                 float(rng.uniform(self.config.goal_min_y, self.config.goal_max_y)),
             )
         self._pause(True)
+        obstacle_poses: dict[str, tuple[float, float, float]] = {}
         try:
-            self._set_robot_pose(
+            self._set_entity_pose(
+                self.config.robot_entity_name,
                 self.config.robot_start_x,
                 self.config.robot_start_y,
                 self.config.robot_start_yaw,
             )
+            if bool(options.get('randomize_obstacles', self.config.randomize_obstacles)):
+                obstacle_poses = self._randomize_obstacles(rng)
             self._replace_goal_marker()
         finally:
             self._pause(False)
         if self.config.settle_seconds:
             time.sleep(self.config.settle_seconds)
-        return {'seed': seed, 'backend': 'gazebo_harmonic'}
+        info: dict[str, object] = {'seed': seed, 'backend': 'gazebo_harmonic'}
+        if obstacle_poses:
+            info['obstacle_poses'] = obstacle_poses
+        return info
 
     def set_goal(self, x: float, y: float) -> None:
         if self._closed:
