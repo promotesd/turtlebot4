@@ -62,13 +62,15 @@ pytest. TensorFlow is optional and imported only when `TensorFlowQNetwork` is se
 source install/setup.bash
 ros2 run turtlebot4_rl_mock mock_demo
 ros2 run turtlebot4_rl_bringup train_rl --episodes 10 --seed 42 \
-  --checkpoint /tmp/turtlebot4_dqn.npz
+  --checkpoint /tmp/turtlebot4_dqn.npz \
+  --metrics-output /tmp/turtlebot4_training_report.json
 ```
 
 The first command runs a fixed policy. The second prints machine-readable training
-metrics, including reward, outcome rates, path length, SPL, duration, and inference
-latency. Both load validated YAML rather than fixed state/action sizes. Neither command
-starts ROS middleware or Gazebo internally.
+metrics, including provenance/config hashes, reward, outcome rates, steps, path length,
+SPL, duration, inference latency, and per-seed episode records. Both load validated YAML
+rather than fixed state/action sizes. Neither command starts ROS middleware or Gazebo
+internally.
 
 ## Test
 

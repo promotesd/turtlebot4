@@ -18,9 +18,9 @@ work that must not be inferred. Commands were run on Ubuntu 24.04 with ROS 2 Jaz
 | Gazebo headless repeated reset | Harmonic `warehouse`, Lite model, `/cmd_vel` moved 0.0261 m, zero-stop, and 100/100 timestamp-valid resets; mean 0.322 s, max 0.388 s | Verified |
 | DQN replay/target/update/checkpoint | unit tests, checkpoint round trip | Verified |
 | Train/evaluate separation and multi-seed metrics | installed `train_rl` train and 5-seed evaluate runs | Verified |
-| Reward/outcome/path/SPL/timing metrics | trainer/evaluator tests and CLI JSON output | Verified |
+| Reproducible scientific metrics | revision/config hashes, environment version, per-seed reward/outcome/steps/time/path/SPL/loss/inference JSON | Verified |
 | Full new-package ROS build | 8 selected packages finished | Verified |
-| New-package colcon tests | 30 tests, 0 errors/failures/skips | Verified |
+| New-package colcon tests | 31 tests, 0 errors/failures/skips | Verified |
 | Ruff/mypy/ament/Python/YAML/CMake/docs checks | local commands and link checker | Verified |
 | Physical-robot staged safety validation | requires TurtleBot 4 and human supervision | Not run |
 | Fork Draft PR | `promotesd/turtlebot4` PR #1 from `agent/rl-framework` | Verified |
