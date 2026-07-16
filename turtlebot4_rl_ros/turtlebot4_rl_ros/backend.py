@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-from threading import Lock
+from threading import Condition, Lock
 import time
 
 from geometry_msgs.msg import TwistStamped
 from nav_msgs.msg import Odometry
 import numpy as np
+from numpy.typing import NDArray
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
@@ -23,12 +24,13 @@ class RosRobotBackend:
 
     def __init__(self, config: RosRobotConfig | None = None, node: Node | None = None) -> None:
         self.config = config or RosRobotConfig()
-        if node is None and not rclpy.ok():  # type: ignore[attr-defined]
+        if node is None and not rclpy.ok():
             rclpy.init()
         self._owns_node = node is None
         self.node = node or Node('turtlebot4_rl_robot_backend')
         self._lock = Lock()
-        self._ranges: np.ndarray | None = None
+        self._sample_available = Condition(self._lock)
+        self._ranges: NDArray[np.float32] | None = None
         self._pose: Pose2D | None = None
         self._scan_received = 0.0
         self._odom_received = 0.0
@@ -52,6 +54,7 @@ class RosRobotBackend:
         with self._lock:
             self._ranges = ranges
             self._scan_received = time.monotonic()
+            self._sample_available.notify_all()
 
     def _on_odom(self, message: Odometry) -> None:
         position = message.pose.pose.position
@@ -63,6 +66,7 @@ class RosRobotBackend:
         with self._lock:
             self._pose = Pose2D(position.x, position.y, yaw)
             self._odom_received = time.monotonic()
+            self._sample_available.notify_all()
 
     def _publish(self, linear_x: float, angular_z: float) -> None:
         message = TwistStamped()
@@ -73,16 +77,39 @@ class RosRobotBackend:
         self._publisher.publish(message)
 
     def _on_watchdog(self) -> None:
-        command_expired = (
-            self._last_command
-            and time.monotonic() - self._last_command > self.config.command_timeout_seconds
-        )
-        if command_expired:
+        now = time.monotonic()
+        with self._lock:
+            command_active = bool(self._last_command)
+            command_expired = (
+                command_active and now - self._last_command > self.config.command_timeout_seconds
+            )
+            newest_sensor = min(self._scan_received, self._odom_received)
+            sensor_stale = command_active and (
+                newest_sensor <= 0.0 or now - newest_sensor > self.config.sensor_timeout_seconds
+            )
+        if command_expired or sensor_stale:
             self.stop()
 
     def is_ready(self) -> bool:
         with self._lock:
             return not self._closed and self._ranges is not None and self._pose is not None
+
+    def wait_until_ready(self, *, not_before_seconds: float = 0.0) -> bool:
+        deadline = time.monotonic() + self.config.readiness_timeout_seconds
+        with self._sample_available:
+            while not self._closed:
+                complete = self._ranges is not None and self._pose is not None
+                fresh = (
+                    self._scan_received >= not_before_seconds
+                    and self._odom_received >= not_before_seconds
+                )
+                if complete and fresh:
+                    return True
+                remaining = deadline - time.monotonic()
+                if remaining <= 0.0:
+                    return False
+                self._sample_available.wait(timeout=remaining)
+        return False
 
     def read_observation(self) -> RobotObservation:
         now = time.monotonic()
@@ -97,20 +124,40 @@ class RosRobotBackend:
     def execute_action(self, command: VelocityCommand) -> None:
         if self._closed:
             raise RuntimeError('ROS robot backend is closed')
-        self._publish(command.linear_x, command.angular_z)
-        self._last_command = time.monotonic()
-        time.sleep(command.duration_seconds)
+        deadline = time.monotonic() + command.duration_seconds
+        period = 1.0 / self.config.command_publish_hz
+        while True:
+            now = time.monotonic()
+            with self._lock:
+                oldest_sensor = min(self._scan_received, self._odom_received)
+                sensors_fresh = (
+                    oldest_sensor > 0.0
+                    and now - oldest_sensor <= self.config.sensor_timeout_seconds
+                )
+            if not sensors_fresh:
+                self.stop()
+                raise RuntimeError('cannot execute action with stale sensor data')
+            self._publish(command.linear_x, command.angular_z)
+            with self._lock:
+                self._last_command = now
+            remaining = deadline - time.monotonic()
+            if remaining <= 0.0:
+                break
+            time.sleep(min(period, remaining))
 
     def stop(self) -> None:
         if self._closed:
             return
         self._publish(0.0, 0.0)
-        self._last_command = 0.0
+        with self._lock:
+            self._last_command = 0.0
 
     def close(self) -> None:
         if self._closed:
             return
         self.stop()
-        self._closed = True
+        with self._sample_available:
+            self._closed = True
+            self._sample_available.notify_all()
         if self._owns_node:
-            self.node.destroy_node()  # type: ignore[no-untyped-call]
+            self.node.destroy_node()

@@ -28,6 +28,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'headless_reset_smoke = turtlebot4_rl_bringup.headless_smoke:main',
             'train_mock = turtlebot4_rl_bringup.train_mock:main',
             'train_rl = turtlebot4_rl_bringup.train_mock:main',
         ]

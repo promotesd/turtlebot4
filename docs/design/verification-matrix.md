@@ -13,17 +13,18 @@ work that must not be inferred. Commands were run on Ubuntu 24.04 with ROS 2 Jaz
 | Deterministic Mock and no episode leak | equal-seed trajectory plus 1,000 complete episodes | Verified |
 | ROS sensor/command safety | live local DDS test for scan/odom/cmd, stale data, watchdog zero | Verified |
 | Gazebo adapter API and goal SDF | package build and valid SDF/config unit tests | Verified |
-| Gazebo headless repeated reset | requires pinned `turtlebot4_simulator` world | Not run |
+| Gazebo headless repeated reset | Harmonic `warehouse`, Lite model, `/cmd_vel` moved 0.0058 m, zero-stop, and 100/100 fresh-sensor resets; mean 0.362 s, max 0.581 s | Verified |
 | DQN replay/target/update/checkpoint | unit tests, checkpoint round trip | Verified |
 | Train/evaluate separation and multi-seed metrics | installed `train_rl` train and 5-seed evaluate runs | Verified |
 | Reward/outcome/path/SPL/timing metrics | trainer/evaluator tests and CLI JSON output | Verified |
 | Full new-package ROS build | 8 selected packages finished | Verified |
-| New-package colcon tests | 25 tests, 0 errors/failures/skips | Verified |
+| New-package colcon tests | 27 tests, 0 errors/failures/skips | Verified |
 | Ruff/mypy/ament/Python/YAML/CMake/docs checks | local commands and link checker | Verified |
 | Physical-robot staged safety validation | requires TurtleBot 4 and human supervision | Not run |
-| Fork Draft PR and GitHub Actions | requires authenticated GitHub CLI/SSH | Pending |
+| Fork Draft PR | `promotesd/turtlebot4` PR #1 from `agent/rl-framework` | Verified |
+| GitHub Actions | final remote check read awaits explicit authorization | Pending |
 | Official upstream RFC/PR | requires fork PR evidence and maintainer coordination | Pending |
 
-The last four external gates are release/coordination evidence, not unit-test targets.
-They remain explicit so Mock success cannot be presented as Gazebo, hardware, or GitHub
-success.
+The remaining external gates are release/coordination evidence, not unit-test targets.
+They remain explicit so local or simulator success cannot be presented as hardware,
+GitHub Actions, or upstream-maintainer approval.

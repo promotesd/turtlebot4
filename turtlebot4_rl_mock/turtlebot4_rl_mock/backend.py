@@ -123,6 +123,10 @@ class MockRobotBackend:
     def is_ready(self) -> bool:
         return not self.simulation.closed
 
+    def wait_until_ready(self, *, not_before_seconds: float = 0.0) -> bool:
+        del not_before_seconds
+        return self.is_ready()
+
     def read_observation(self) -> RobotObservation:
         return RobotObservation(
             self.simulation.scan(),

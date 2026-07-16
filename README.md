@@ -86,7 +86,8 @@ PYTHONPATH=turtlebot4_rl_core:turtlebot4_rl_mock:turtlebot4_rl_ros:turtlebot4_rl
 ```
 
 Gazebo and physical-robot checks are deliberately separate because they require
-external processes or hardware. Never report those checks as passing based only on
+external processes or hardware. The [Gazebo training tutorial](docs/tutorials/gazebo-training.md)
+includes the real server-only 100-reset gate; never report it as passing based only on
 Mock results.
 
 ## Safety

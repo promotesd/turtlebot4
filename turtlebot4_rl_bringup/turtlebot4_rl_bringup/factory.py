@@ -52,7 +52,7 @@ class RosGazeboEnvironment:
         from turtlebot4_rl_ros.config import RosRobotConfig
 
         self._rclpy = rclpy
-        self._initialized_here = not rclpy.ok()  # type: ignore[attr-defined]
+        self._initialized_here = not rclpy.ok()
         if self._initialized_here:
             rclpy.init()
         self._robot = RosRobotBackend(RosRobotConfig(**configuration.ros))
@@ -80,7 +80,7 @@ class RosGazeboEnvironment:
         self._executor.shutdown(timeout_sec=2.0)
         self._thread.join(timeout=2.0)
         self._environment.close()
-        if self._initialized_here and self._rclpy.ok():  # type: ignore[attr-defined]
+        if self._initialized_here and self._rclpy.ok():
             self._rclpy.shutdown()
         self._closed = True
 

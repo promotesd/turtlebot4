@@ -6,9 +6,7 @@
   <description>Gazebo Harmonic world adapter for TurtleBot 4 reinforcement learning.</description>
   <maintainer email="1412822254@qq.com">xiaodudu</maintainer>
   <license>Apache-2.0</license>
-  <exec_depend>geometry_msgs</exec_depend>
-  <exec_depend>rclpy</exec_depend>
-  <exec_depend>ros_gz_interfaces</exec_depend>
+  <exec_depend>gz_tools_vendor</exec_depend>
   <exec_depend>ros_gz_sim</exec_depend>
   <exec_depend>turtlebot4_rl_core</exec_depend>
   <test_depend>python3-pytest</test_depend>

@@ -4,6 +4,7 @@ from collections.abc import Iterable
 import math
 
 import numpy as np
+from numpy.typing import NDArray
 
 
 def quaternion_to_yaw(x: float, y: float, z: float, w: float) -> float:
@@ -17,7 +18,7 @@ def quaternion_to_yaw(x: float, y: float, z: float, w: float) -> float:
     return math.atan2(sin_yaw, cos_yaw)
 
 
-def validate_ranges(values: Iterable[float]) -> np.ndarray:
+def validate_ranges(values: Iterable[float]) -> NDArray[np.float32]:
     """Convert ranges while rejecting an unusable empty scan."""
     ranges = np.asarray(list(values), dtype=np.float32)
     if ranges.size == 0:

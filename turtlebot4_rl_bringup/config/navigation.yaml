@@ -22,15 +22,21 @@ termination:
   max_steps: 800
 ros:
   scan_topic: /scan
-  odom_topic: /odom
+  # Gazebo's diff-drive /odom is not reset by entity teleportation. Ground
+  # truth stays in the same world frame as randomized goals.
+  odom_topic: /sim_ground_truth_pose
   cmd_vel_topic: /cmd_vel
   base_frame: base_link
   odom_frame: odom
   sensor_timeout_seconds: 0.5
   command_timeout_seconds: 0.3
+  readiness_timeout_seconds: 5.0
+  command_publish_hz: 20.0
 gazebo:
-  world_name: depot
+  world_name: warehouse
   robot_entity_name: turtlebot4
   goal_entity_name: turtlebot4_rl_goal
-  service_timeout_seconds: 5.0
+  service_timeout_seconds: 20.0
+  service_retries: 2
+  retry_delay_seconds: 0.1
   settle_seconds: 0.25

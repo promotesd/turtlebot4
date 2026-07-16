@@ -33,8 +33,8 @@ def test_ros_backend_topics_freshness_and_command_watchdog() -> None:
         scan_topic=namespace + '/scan',
         odom_topic=namespace + '/odom',
         cmd_vel_topic=namespace + '/cmd_vel',
-        sensor_timeout_seconds=0.15,
-        command_timeout_seconds=0.08,
+        sensor_timeout_seconds=0.08,
+        command_timeout_seconds=0.5,
     )
     backend = RosRobotBackend(config)
     driver = Node('turtlebot4_rl_test_driver_' + suffix)
@@ -69,7 +69,9 @@ def test_ros_backend_topics_freshness_and_command_watchdog() -> None:
             odom_publisher.publish(odometry)
             return backend.is_ready()
 
+        freshness_boundary = time.monotonic()
         wait_until(publish_sensors)
+        assert backend.wait_until_ready(not_before_seconds=freshness_boundary)
         observation = backend.read_observation()
         assert observation.healthy
         assert observation.ranges.tolist() == pytest.approx([1.0, 2.0, 3.0])

@@ -101,7 +101,10 @@ Evaluation records revision, config, environment version, seed set, reward, succ
 collision, timeout, steps, elapsed time, path length, SPL, training duration, and
 inference latency. The initial target is zero uncaught errors over 1,000 Mock resets and
 deterministic trajectories for equal seeds. Simulator targets are 100 repeated resets
-and fresh `/scan`/`/odom`; evidence is pending an installed simulator world.
+and fresh `/scan`/pose data. Reset and step both gate observations on samples received
+after the world reset or action boundary. The Harmonic `warehouse` acceptance run
+completed 100 of 100 resets with post-reset sensor samples (mean 0.362 seconds, maximum
+0.581 seconds) and observed 0.0058 m of low-speed command motion before zero-stop.
 
 ## Pull-request split
 

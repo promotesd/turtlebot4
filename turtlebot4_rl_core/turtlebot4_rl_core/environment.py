@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from typing import Any
 
 import numpy as np
@@ -57,8 +58,10 @@ class TurtleBot4Env:
         self.robot.stop()
         world_info = self.world.reset(seed=seed, options=options)
         self.action_space.seed(seed)
-        if not self.robot.is_ready():
-            raise RuntimeError('robot backend is not ready after reset')
+        reset_completed = time.monotonic()
+        if not self.robot.wait_until_ready(not_before_seconds=reset_completed):
+            self.robot.stop()
+            raise RuntimeError('robot backend did not provide fresh data after reset')
         sample = self.robot.read_observation()
         if not sample.healthy:
             raise RuntimeError(f'invalid initial sensor sample: {sample.status}')
@@ -84,6 +87,9 @@ class TurtleBot4Env:
         command = self.task.action.command(action)
         try:
             self.robot.execute_action(command)
+            action_completed = time.monotonic()
+            if not self.robot.wait_until_ready(not_before_seconds=action_completed):
+                raise RuntimeError('robot backend did not provide fresh data after action')
             sample = self.robot.read_observation()
         except Exception:
             self.robot.stop()

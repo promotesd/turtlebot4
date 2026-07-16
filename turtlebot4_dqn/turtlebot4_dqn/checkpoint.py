@@ -31,9 +31,7 @@ def save_checkpoint(agent: DQNAgent, path: str | Path) -> Path:
         }
     )
     with temporary.open('wb') as stream:
-        # NumPy's stubs cannot prove that a dynamic mapping does not contain
-        # the reserved ``allow_pickle`` keyword; runtime accepts named arrays.
-        np.savez_compressed(stream, **arrays)  # type: ignore[arg-type]
+        np.savez_compressed(stream, **arrays)
     temporary.replace(destination)
     return destination
 

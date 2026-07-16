@@ -8,14 +8,18 @@ import re
 class GazeboWorldConfig:
     """Names, timeouts, reset pose and goal bounds."""
 
-    world_name: str = 'depot'
+    world_name: str = 'warehouse'
     robot_entity_name: str = 'turtlebot4'
     goal_entity_name: str = 'turtlebot4_rl_goal'
-    service_timeout_seconds: float = 5.0
+    # Sensor-heavy worlds can run far slower than wall time on CPU-only hosts.
+    service_timeout_seconds: float = 20.0
+    service_retries: int = 2
+    retry_delay_seconds: float = 0.1
     settle_seconds: float = 0.25
     robot_start_x: float = 0.0
     robot_start_y: float = 0.0
     robot_start_yaw: float = 0.0
+    goal_marker_z: float = 0.01
     goal_min_x: float = 1.0
     goal_max_x: float = 2.5
     goal_min_y: float = -1.5
@@ -29,7 +33,13 @@ class GazeboWorldConfig:
         ):
             if not re.fullmatch(r'[A-Za-z0-9_\-]+', value):
                 raise ValueError(f'{label} contains unsupported characters')
-        if self.service_timeout_seconds <= 0 or self.settle_seconds < 0:
-            raise ValueError('timeouts must be non-negative and service timeout positive')
+        if (
+            self.service_timeout_seconds <= 0
+            or self.service_retries < 0
+            or self.retry_delay_seconds < 0
+            or self.settle_seconds < 0
+            or self.goal_marker_z < 0
+        ):
+            raise ValueError('timeouts, retries, and marker height must be valid')
         if self.goal_min_x >= self.goal_max_x or self.goal_min_y >= self.goal_max_y:
             raise ValueError('goal bounds must be increasing')
